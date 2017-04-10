@@ -9,7 +9,8 @@
     "no-reference": false,
     "space-before-function-paren": [true, "always"],
     "no-namespace": [true, "allow-declarations"],
-    "no-console": [false]
+    "no-console": [false],
+    "max-classes-per-file": [false]
   },
   "jsRules": {
     "curly": true
