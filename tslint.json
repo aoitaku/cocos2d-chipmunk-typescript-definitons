@@ -1,0 +1,19 @@
+{
+  "extends": "tslint:latest",
+  "defaultSeverity": "warning",
+  "rules": {
+    "curly": true,
+    "max-line-length": [true, 140],
+    "quotemark": [true, "single", "avoid-escape"],
+    "semicolon": [true, "never"],
+    "no-reference": false,
+    "space-before-function-paren": [true, "always"],
+    "no-namespace": [true, "allow-declarations"],
+    "no-console": [false]
+  },
+  "jsRules": {
+    "curly": true
+  },
+  "rulesDirectory": [
+  ]
+}
