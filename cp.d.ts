@@ -86,6 +86,19 @@ declare namespace cp {
 
   export function bb (l: number, b: number, r: number, t: number): BB
 
+  export class SegmentQueryInfo {
+    public shape: Shape
+    public t: number
+    public n: Vect
+  }
+
+  export class NearestPointQueryInfo  {
+    public shape: Shape
+    public p: Vect
+    public d: number
+    public g: Vect
+  }
+
   export class Space {
     public gravity: Vect
     public iterations: number
@@ -95,8 +108,28 @@ declare namespace cp {
     public sleepTimeThreshold: number
     public collisionSlop: number
     public collisionBias: number
-    public confirmPersistence: number
+    public collisionPersistence: number
     public enableContactGraph: boolean
+    public nearestPointQueryFirst (point: Vect, maxDistance: number, layers: number, group: number, info: NearestPointQueryInfo): Shape
+    public segmentQueryFirst (start: Vect, end: Vect, layers: number, group: number, info: SegmentQueryInfo): Shape
+    public addBody (body: Body): Body
+    public addConstraint (constraint: Constraint): Constraint
+    public addShape (shape: Shape): Shape
+    public addStaticShape (shape: Shape): Shape
+    public containsBody (body: Body): boolean
+    public containsConstraint (constraint: Constraint): boolean
+    public containsShape (shape: Shape): boolean
+    public getCurrentTimeStep (space: Space): number
+    public isLocked (space: Space): boolean
+    public reindexShape (shape: Shape): void
+    public reindexShapesForBody (body: Body): void
+    public reindexStatic (space: Space): void
+    public removeBody (body: Body): void
+    public removeCollisionHandler (a: number, b: number): void
+    public removeConstraint (constraint: Constraint): void
+    public removeShape (shape: Shape): void
+    public step (dt: number): void
+    public useSpatialHash (dim: number, count: number): void
   }
 
   export class Body {
@@ -112,6 +145,21 @@ declare namespace cp {
     public rot: Vect
     public m: number
     public i: number
+    public constructor (m: number, i: number)
+    public activate (): void
+    public activateStatic (filter: Shape): void
+    public applyForce (f: Vect, r: Vect): void
+    public applyImpulse (j: Vect, r: Vect): void
+    public getVelAtLocalPoint (point: Vect): Vect
+    public getVelAtWorldPoint (point: Vect): Vect
+    public isSleeping (): boolean
+    public kineticEnergy (): number
+    public local2World (vec: Vect): Vect
+    public sleep (): void
+    public sleepWithGroup (group: Body): void
+    public updatePosition (dt: number): void
+    public updateVelocity (gravity: Vect, damping: number, dt: number): void
+    public world2Local (vec: Vect): Vect
   }
 
   export class Shape {
@@ -124,11 +172,18 @@ declare namespace cp {
     public surface_v: Vect
     public e: number
     public u: number
+    public cacheBB (): BB
+    public getBB (): BB
+    public nearestPointQuery (p: Vect, out: NearestPointQueryInfo): number
+    public pointQuery (p: Vect): boolean
+    public segmentQuery (a: Vect, b: Vect, info: SegmentQueryInfo): boolean
+    public update (pos: Vect, rot: Vect): BB
   }
 
   export class CircleShape extends Shape {
     public r: number
     public c: Vect
+    public constructor (body: Body, r: number, c: number)
   }
 
   export class SegmentShape extends Shape {
@@ -136,9 +191,15 @@ declare namespace cp {
     public b: Vect
     public n: Vect
     public r: number
+    public constructor (body: Body, a: Vect, b: Vect, r: number)
+    public setNeighbors (prev: Vect, next: Vect): void
   }
 
-  export class PolyShape extends Shape {}
+  export class PolyShape extends Shape {
+    public constructor (body: Body, verts: [Vect], r: number)
+    public getVerts (): [Vect]
+    public getVert (idx: number): Vect
+  }
 
   export function BoxShape2 (body: Body, box: BB): PolyShape
   export function BoxShape (body: Body, width: number, height: number): PolyShape
@@ -150,6 +211,7 @@ declare namespace cp {
     public maxForce: Vect
     public errorBias: number
     public maxBias: number
+    public getImpulse (): number
   }
 
   export class PinJoint extends Constraint {
@@ -214,5 +276,14 @@ declare namespace cp {
     public e: number
     public u: number
     public surface_vr: Vect
+    public getBodies (a: [Body], b: [Body]): void
+    public getCount (): number
+    public getDepth (i: number): number
+    public getNormal (i: number): Vect
+    public getShapes (a: [Shape], b: [Shape]): void
+    public ignore (): void
+    public isFirstContact (): boolean
+    public totalImpulse (): Vect
+    public totalKE (): number
   }
 }
