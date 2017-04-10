@@ -119,11 +119,11 @@ declare namespace cp {
     public containsBody (body: Body): boolean
     public containsConstraint (constraint: Constraint): boolean
     public containsShape (shape: Shape): boolean
-    public getCurrentTimeStep (space: Space): number
-    public isLocked (space: Space): boolean
+    public getCurrentTimeStep (): number
+    public isLocked (): boolean
     public reindexShape (shape: Shape): void
     public reindexShapesForBody (body: Body): void
-    public reindexStatic (space: Space): void
+    public reindexStatic (): void
     public removeBody (body: Body): void
     public removeCollisionHandler (a: number, b: number): void
     public removeConstraint (constraint: Constraint): void
