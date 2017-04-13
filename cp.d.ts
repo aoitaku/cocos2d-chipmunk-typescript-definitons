@@ -41,8 +41,25 @@ declare namespace cp {
   export function vforangle (a: number): Vect
   export function vtoangle (v: Vect): number
 
+  export function fabs (f: number): number
+  export function fclamp (f: number, min: number, max: number): number
   export function fclamp01 (f: number): number
   export function clamp01 (f: number): number
+  export function flerp (f1: number, f2: number, t: number): number
+  export function flerpconst (f1: number, f2: number, d: number): number
+  export function fmax (a: number, b: number): number
+  export function fmin (a: number, b: number): number
+
+  export function momentForCircle (m: number, r1: number, r2: number, offset: Vect): number
+  export function areaForCircle (r1: number, r2: number): number
+  export function momentForSegment (m: number, a: Vect, b: Vect): number
+  export function areaForSegment (a: Vect, b: Vect, r: number): number
+  export function momentForPoly (m: number, verts: Vect[], offset: Vect): number
+  export function areaForPoly (verts: Vect[]): number
+  export function centroidForPoly (verts: Vect[]): Vect
+  export function recenterPoly (verts: Vect[]): void
+  export function momentForBox (m: number, width: number, height: number): number
+  export function momentForBox2 (m: number, box: BB): number
 
   interface IVectStatic {
     (x: number, y: number): Vect
