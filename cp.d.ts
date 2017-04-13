@@ -103,32 +103,32 @@ declare namespace cp {
 
   export function bb (l: number, b: number, r: number, t: number): BB
 
-  export class SegmentQueryInfo {
-    public shape: Shape
-    public t: number
-    public n: Vect
+  export interface ISegmentQueryInfo {
+    shape: Shape
+    t: number
+    n: Vect
   }
 
-  export class NearestPointQueryInfo  {
-    public shape: Shape
-    public p: Vect
-    public d: number
-    public g: Vect
+  export interface INearestPointQueryInfo  {
+    shape: Shape
+    p: Vect
+    d: number
+    g: Vect
   }
 
   export class Space {
     public gravity: Vect
     public iterations: number
     public damping: number
-    public staticBody: Body
     public idleSpeedThreshold: number
     public sleepTimeThreshold: number
     public collisionSlop: number
     public collisionBias: number
     public collisionPersistence: number
     public enableContactGraph: boolean
-    public nearestPointQueryFirst (point: Vect, maxDistance: number, layers: number, group: number, info: NearestPointQueryInfo): Shape
-    public segmentQueryFirst (start: Vect, end: Vect, layers: number, group: number, info: SegmentQueryInfo): Shape
+    public readonly staticBody: Body
+    public nearestPointQueryFirst (point: Vect, maxDistance: number, layers: number, group: number, info: INearestPointQueryInfo): Shape
+    public segmentQueryFirst (start: Vect, end: Vect, layers: number, group: number, info: ISegmentQueryInfo): Shape
     public addBody (body: Body): Body
     public addConstraint (constraint: Constraint): Constraint
     public addShape (shape: Shape): Shape
@@ -158,10 +158,12 @@ declare namespace cp {
     public t: number
     public v_limit: number
     public w_limit: number
-    public space: Space
-    public rot: Vect
     public m: number
     public i: number
+    public readonly vx: number
+    public readonly vy: number
+    public readonly space: Space
+    public readonly rot: Vect
     public constructor (m: number, i: number)
     public activate (): void
     public activateStatic (filter: Shape): void
@@ -185,36 +187,40 @@ declare namespace cp {
     public collision_type: number
     public layers: number
     public sensor: boolean
-    public space: Space
     public surface_v: Vect
     public e: number
     public u: number
+    public readonly bb_l: number
+    public readonly bb_b: number
+    public readonly bb_r: number
+    public readonly bb_t: number
+    public readonly space: Space
     public cacheBB (): BB
     public getBB (): BB
-    public nearestPointQuery (p: Vect, out: NearestPointQueryInfo): number
+    public nearestPointQuery (p: Vect, out: INearestPointQueryInfo): number
     public pointQuery (p: Vect): boolean
-    public segmentQuery (a: Vect, b: Vect, info: SegmentQueryInfo): boolean
+    public segmentQuery (a: Vect, b: Vect, info: ISegmentQueryInfo): boolean
     public update (pos: Vect, rot: Vect): BB
   }
 
   export class CircleShape extends Shape {
-    public r: number
-    public c: Vect
+    public readonly r: number
+    public readonly c: Vect
     public constructor (body: Body, r: number, c: number)
   }
 
   export class SegmentShape extends Shape {
-    public a: Vect
-    public b: Vect
-    public n: Vect
-    public r: number
+    public readonly a: Vect
+    public readonly b: Vect
+    public readonly n: Vect
+    public readonly r: number
     public constructor (body: Body, a: Vect, b: Vect, r: number)
     public setNeighbors (prev: Vect, next: Vect): void
   }
 
   export class PolyShape extends Shape {
-    public constructor (body: Body, verts: [Vect], r: number)
-    public getVerts (): [Vect]
+    public readonly verts: Vect[]
+    public constructor (body: Body, verts: Vect[], r: number)
     public getVert (idx: number): Vect
   }
 
@@ -224,83 +230,149 @@ declare namespace cp {
   export class Constraint {
     public a: Body
     public b: Body
-    public space: Space
     public maxForce: Vect
     public errorBias: number
     public maxBias: number
+    public readonly space: Space
+    public isDampedRotarySpring (): boolean
+    public isDampedSpring (): boolean
+    public isGearJoint (): boolean
+    public isGrooveJoint (): boolean
+    public isPinJoint (): boolean
+    public isPivotJoint (): boolean
+    public isRatchetJoint (): boolean
+    public isRotaryLimitJoint (): boolean
+    public isSimpleMotor (): boolean
+    public isSlideJoint (): boolean
     public getImpulse (): number
+    public getCollideBodies (): boolean
   }
 
   export class PinJoint extends Constraint {
-    public anchr1: Vect
-    public anchr2: Vect
+    public readonly anchr1: Vect
+    public readonly anchr2: Vect
     public dist: number
+    public constructor (a: Body, b: Body, anchorA: Vect, anchorB: Vect)
+    public getAnchorA (): Vect
+    public getAnchorB (): Vect
+    public setAnchorA (anchorA: Vect): void
+    public setAnchorB (anchorB: Vect): void
   }
 
   export class SlideJoint extends Constraint {
-    public anchr1: Vect
-    public anchr2: Vect
+    public readonly anchr1: Vect
+    public readonly anchr2: Vect
     public min: number
     public max: number
+    public constructor (a: Body, b: Body, anchorA: Vect, anchorB: Vect, min: number, max: number)
+    public getAnchorA (): Vect
+    public getAnchorB (): Vect
+    public setAnchorA (anchorA: Vect): void
+    public setAnchorB (anchorB: Vect): void
   }
 
   export class PivotJoint extends Constraint {
-    public anchr1: Vect
-    public anchr2: Vect
+    public readonly anchr1: Vect
+    public readonly anchr2: Vect
+    public constructor (a: Body, b: Body, pivot: Vect)
+    public getAnchorA (): Vect
+    public getAnchorB (): Vect
+    public setAnchorA (anchorA: Vect): void
+    public setAnchorB (anchorB: Vect): void
   }
 
   export class GrooveJoint extends Constraint {
     public anchr2: Vect
     public grv_a: Vect
     public grv_b: Vect
+    public constructor (a: Body, b: Body, grooveA: Vect, grooveB: Vect, anchorB: Vect)
+    public getAnchorB (): Vect
+    public setAnchorB (anchorB: Vect): void
+    public getGrooveA (): Vect
+    public getGrooveB (): Vect
+    public setGrooveA (anchorA: Vect): void
+    public setGrooveB (anchorB: Vect): void
   }
 
   export class DampedSpring extends Constraint {
-    public anchr1: Vect
-    public anchr2: Vect
+    public readonly anchr1: Vect
+    public readonly anchr2: Vect
     public damping: number
     public restLength: number
     public stiffness: number
+    public constructor (a: Body, b: Body, anchorA: Vect, anchorB: Vect, restLength: number, stiffness: number, damping: number)
+    public getAnchorA (): Vect
+    public getAnchorB (): Vect
+    public setAnchorA (anchorA: Vect): void
+    public setAnchorB (anchorB: Vect): void
   }
 
   export class DampedRotarySpring extends Constraint {
     public restAngle: number
     public stiffness: number
     public damping: number
+    public constructor (a: Body, b: Body, restAngle: number, stiffness: number, damping: number)
   }
 
   export class RotaryLimitJoint extends Constraint {
     public min: number
     public max: number
+    public constructor (a: Body, b: Body, min: number, max: number)
   }
 
   export class RatchetJoint extends Constraint {
     public angle: number
     public phase: number
     public ratchet: number
+    public constructor (a: Body, b: Body, phase: number, ratchet: number)
   }
 
   export class GearJoint extends Constraint {
     public phase: number
     public ratio: number
+    public constructor (a: Body, b: Body, phase: number, ratio: number)
   }
 
   export class SimpleMotor extends Constraint {
     public rate: number
+    constructor (a: Body, b: Body, rate: number)
   }
 
   export class Arbiter {
     public e: number
     public u: number
     public surface_vr: Vect
-    public getBodies (a: [Body], b: [Body]): void
+    public readonly a: Vect
+    public readonly b: Vect
+    public readonly body_a: Body
+    public readonly body_b: Body
+    public callWildcardBeginA (space: Space): boolean
+    public callWildcardBeginB (space: Space): boolean
+    public callWildcardPostSolveA (space: Space): void
+    public callWildcardPostSolveB (space: Space): void
+    public callWildcardPreSolveA (space: Space): void
+    public callWildcardPreSolveB (space: Space): void
+    public callWildcardSeparateA (space: Space): void
+    public callWildcardSeparateB (space: Space): void
     public getCount (): number
     public getDepth (i: number): number
-    public getNormal (i: number): Vect
-    public getShapes (a: [Shape], b: [Shape]): void
-    public ignore (): void
+    public getFriction (): number
+    public getNormal (): Vect
+    public getPointA (): Vect
+    public getPointB (): Vect
+    public getRestitution (): number
+    public getSurfaceVelocity (): Vect
+    public ignore (): boolean
     public isFirstContact (): boolean
+    public isRemoval (): boolean
+    public setFriction (friction: number): void
+    public setRestitution (restitution: number): void
+    public setSurfaceVelocity (surfaceVelocity: Vect): void
     public totalImpulse (): Vect
     public totalKE (): number
+    public getShapes (): Shape[]
+    public getBodies (): Body[]
+    public getBodyA (): Body
+    public getBodyB (): Body
   }
 }
