@@ -153,7 +153,7 @@ declare namespace cp {
     public a: number
     public w: number
     public p: Vect
-    public v: number
+    public v: Vect
     public f: Vect
     public t: number
     public v_limit: number
