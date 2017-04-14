@@ -206,7 +206,7 @@ declare namespace cp {
   export class CircleShape extends Shape {
     public readonly r: number
     public readonly c: Vect
-    public constructor (body: Body, r: number, c: number)
+    public constructor (body: Body, r: number, c: Vect)
   }
 
   export class SegmentShape extends Shape {
