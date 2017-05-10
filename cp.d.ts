@@ -19,6 +19,34 @@ declare namespace cp {
   }
 
   export const vzero: Vect
+  export const SHAPE_FILTER_ALL: IShapeFilter
+  export const ALLOW_PRIVATE_ACCESS: number
+  export const ALL_CATEGORIES: number
+  export const ARBITER_STATE_CACHED: number
+  export const ARBITER_STATE_FIRST_COLLISION: number
+  export const ARBITER_STATE_IGNORE: number
+  export const ARBITER_STATE_INVALIDATED: number
+  export const ARBITER_STATE_NORMAL: number
+  export const BODY_TYPE_DYNAMIC: number
+  export const BODY_TYPE_KINEMATIC: number
+  export const BODY_TYPE_STATIC: number
+  export const BUFFER_BYTES: number
+  export const CIRCLE_SHAPE: number
+  export const HASH_COEF: number
+  export const MAX_CONTACTS_PER_ARBITER: number
+  export const NO_GROUP: number
+  export const NUM_SHAPES: number
+  export const POLY_SHAPE: number
+  export const POLY_SHAPE_INLINE_ALLOC: number
+  export const SEGMENT_SHAPE: number
+  export const SPACE_DEBUG_DRAW_COLLISION_POINTS: number
+  export const SPACE_DEBUG_DRAW_CONSTRAINTS: number
+  export const SPACE_DEBUG_DRAW_SHAPES: number
+  export const USE_DOUBLES: number
+  export const VERSION_MAJOR: number
+  export const VERSION_MINOR: number
+  export const VERSION_RELEASE: number
+  export const WILDCARD_COLLISION_TYPE: number
 
   export function veql (v1: Vect, v2: Vect): boolean
   export function vadd (v1: Vect, v2: Vect): Vect
@@ -67,6 +95,8 @@ declare namespace cp {
   export function momentForBox (m: number, width: number, height: number): number
   export function momentForBox2 (m: number, box: BB): number
 
+  export function shapeFilterNew (group: number, categories: number, mask: number): IShapeFilter
+
   interface IVectStatic {
     (x: number, y: number): Vect
     add (v1: Vect, v2: Vect): Vect
@@ -111,15 +141,22 @@ declare namespace cp {
 
   export interface ISegmentQueryInfo {
     shape: Shape
-    t: number
-    n: Vect
+    point: Vect
+    normal: Vect
+    alpha: number
   }
 
-  export interface INearestPointQueryInfo  {
+  export interface IPointQueryInfo  {
     shape: Shape
-    p: Vect
-    d: number
-    g: Vect
+    point: Vect
+    distance: number
+    gradient: Vect
+  }
+
+  export interface IShapeFilter {
+    group?: number
+    categories?: number
+    mask?: number
   }
 
   export class Space {
@@ -133,8 +170,8 @@ declare namespace cp {
     public collisionPersistence: number
     public enableContactGraph: boolean
     public readonly staticBody: Body
-    public nearestPointQueryFirst (point: Vect, maxDistance: number, layers: number, group: number, info: INearestPointQueryInfo): Shape
-    public segmentQueryFirst (start: Vect, end: Vect, layers: number, group: number, info: ISegmentQueryInfo): Shape
+    public pointQueryNearest (point: Vect, maxDistance: number, filter: IShapeFilter): IPointQueryInfo
+    public segmentQueryFirst (start: Vect, end: Vect, radius: number, filter: IShapeFilter): ISegmentQueryInfo
     public addBody (body: Body): Body
     public addConstraint (constraint: Constraint): Constraint
     public addShape (shape: Shape): Shape
@@ -153,13 +190,24 @@ declare namespace cp {
     public removeShape (shape: Shape): void
     public step (dt: number): void
     public useSpatialHash (dim: number, count: number): void
+    public destroy (): void
+    public eachConstraint (callback: (constraint: Constraint) => void): void
+    public eachBody (callback: (constraint: Body) => void): void
+    public eachShape (callback: (constraint: Shape) => void): void
+    public addCollisionHandler (
+      a: number,
+      b: number,
+      begin: (arbiter: Arbiter, space: Space) => boolean,
+      preSolve: (arbiter: Arbiter, space: Space) => boolean,
+      postSolve: (arbiter: Arbiter, space: Space) => void,
+      separate: (arbiter: Arbiter, space: Space) => void): void
   }
 
   export class Body {
     public a: number
     public w: number
     public p: Vect
-    public v: number
+    public v: Vect
     public f: Vect
     public t: number
     public v_limit: number
@@ -193,7 +241,6 @@ declare namespace cp {
     public body: Body
     public group: number
     public collision_type: number
-    public layers: number
     public sensor: boolean
     public surface_v: Vect
     public e: number
@@ -205,16 +252,17 @@ declare namespace cp {
     public readonly space: Space
     public cacheBB (): BB
     public getBB (): BB
-    public nearestPointQuery (p: Vect, out: INearestPointQueryInfo): number
-    public pointQuery (p: Vect): boolean
-    public segmentQuery (a: Vect, b: Vect, info: ISegmentQueryInfo): boolean
+    public pointQuery (p: Vect): IPointQueryInfo
+    public segmentQuery (a: Vect, b: Vect, radius?: number): ISegmentQueryInfo
     public update (pos: Vect, rot: Vect): BB
+    public getFilter (): IShapeFilter
+    public setFilter (filter: IShapeFilter): void
   }
 
   export class CircleShape extends Shape {
     public readonly r: number
     public readonly c: Vect
-    public constructor (body: Body, r: number, c: number)
+    public constructor (body: Body, r: number, c: Vect)
   }
 
   export class SegmentShape extends Shape {
@@ -228,7 +276,7 @@ declare namespace cp {
 
   export class PolyShape extends Shape {
     public readonly verts: Vect[]
-    public constructor (body: Body, verts: Vect[], r: number)
+    public constructor (body: Body, verts: Vect[], c: Vect)
     public getVert (idx: number): Vect
   }
 
