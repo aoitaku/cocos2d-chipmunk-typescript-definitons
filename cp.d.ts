@@ -1,5 +1,11 @@
 // tslint:disable:variable-name
 declare namespace cp {
+  export enum BodyType {
+    Dynamic,
+    Kinematic,
+    Static,
+  }
+
   export class Vect {
     public x: number
     public y: number
@@ -179,6 +185,8 @@ declare namespace cp {
     public updatePosition (dt: number): void
     public updateVelocity (gravity: Vect, damping: number, dt: number): void
     public world2Local (vec: Vect): Vect
+    public setType (type: BodyType): void
+    public getType (): BodyType
   }
 
   export class Shape {
